@@ -12,19 +12,38 @@ import Settings from './Settings';
 function Dashboard({ user, setUser }) {
   const [activeTab, setActiveTab] = useState('home');
   const [tasks, setTasks] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [goals, setGoals] = useState([]);
+  const [productivityScore, setProductivityScore] = useState(0);
   const [time, setTime] = useState(new Date());
 
-  useEffect(() => {
-    if (user && user.userId) {
-      fetchDashboardData();
-    }
+  if (user && user.userId) {
+    fetchDashboardData();
+
+    fetch(`http://localhost:8081/api/productivity/score/${user.userId}`)
+        .then(res => res.json())
+        .then(data => {
+            setProductivityScore(data.score);
+        })
+        .catch(error => {
+            console.error("Failed to fetch productivity score:", error);
+        });
+
+    fetch(`http://localhost:8081/api/recommendations/${user.userId}`)
+        .then(res => res.json())
+        .then(data => {
+            setRecommendations(data.recommendations || []);
+        })
+        .catch(error => {
+            console.error("Failed to fetch recommendations:", error);
+        });
+}
 
     const timer = setInterval(() => setTime(new Date()), 1000);
 
     return () => clearInterval(timer);
-  }, [user]);
+}, [user]);
 
   const fetchData = async (url) => {
     const token = localStorage.getItem("token");
@@ -103,10 +122,7 @@ function Dashboard({ user, setUser }) {
     }
   };
 
-  const completedTasks = tasks.filter(t => t.status === 'COMPLETED').length;
-  const productivityScore = Math.min(100, Math.round(
-    (completedTasks * 20) + (goals.filter(g => g.status === 'COMPLETED').length * 30)
-  ));
+
 
   return (
     <div style={styles.container}>
@@ -215,7 +231,9 @@ function HomeTab({ user, tasks, expenses, goals, time, setActiveTab }) {
           <span style={styles.aiRecIcon}>🤖</span>
           <span style={styles.aiRecTitle}>NEXUS AI Daily Recommendation</span>
         </div>
-        <p style={styles.aiRecText}>{getAIRecommendation()}</p>
+        <p style={styles.aiRecText}>
+  {getAIRecommendation()}
+</p>
         <button style={styles.aiRecBtn} onClick={() => setActiveTab('ai')}>
           Ask AI for more tips →
         </button>

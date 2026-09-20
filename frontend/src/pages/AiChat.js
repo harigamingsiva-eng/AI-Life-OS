@@ -68,6 +68,32 @@ function AiChat({ user }) {
   );
 }, [messages]);
 
+const clearChat = async () => {
+
+  try {
+
+    const confirmClear = window.confirm(
+      "Are you sure you want to clear this conversation?"
+    );
+
+    if (!confirmClear) return;
+
+    await fetch("http://localhost:8081/api/chat/clear", {
+      method: "DELETE"
+    });
+
+    setMessages([]);
+
+    setShowSuggestions(true);
+
+  } catch (error) {
+
+    console.error("Error clearing chat:", error);
+
+  }
+
+};
+
  const sendMessage = async (text) => {
   const msgText = text || input;
   if (!msgText.trim()) return;
@@ -89,7 +115,7 @@ function AiChat({ user }) {
   try {
     const token = localStorage.getItem("token");
 
-    const res = await fetch("http://localhost:8080/api/chat", {
+    const res = await fetch("http://localhost:8081/api/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -151,14 +177,6 @@ if (data.error) {
       .replace(/\n/g, '<br/>');
   };
 
-  const clearChat = () => {
-    setMessages([{
-      role: 'ai',
-      text: `👋 Chat cleared! How can I help you, **Champion**?`,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }]);
-    setShowSuggestions(true);
-  };
 
   return (
     <div style={styles.container}>
