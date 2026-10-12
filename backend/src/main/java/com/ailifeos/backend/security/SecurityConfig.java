@@ -22,14 +22,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-
     private final JwtFilter jwtFilter;
 
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http)
             throws Exception {
-
 
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -44,73 +42,52 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
 
-        .requestMatchers(
-                "/api/auth/**",
-                "/api/chat/**",
-                "/api/productivity/score/**",
-                "/api/recommendations/**"
-        ).permitAll()
+                    // Only login and register are public
+                    .requestMatchers("/api/auth/**").permitAll()
 
-        .anyRequest().authenticated()
-)
-
+                    // Everything else needs a valid JWT token
+                    .anyRequest().authenticated()
+            )
 
             .addFilterBefore(
                     jwtFilter,
                     UsernamePasswordAuthenticationFilter.class
             );
 
-
         return http.build();
     }
 
 
-
     @Bean
-    public CorsConfigurationSource corsConfigurationSource(){
+    public CorsConfigurationSource corsConfigurationSource() {
 
-
-        CorsConfiguration configuration =
-                new CorsConfiguration();
-
+        CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(
                 List.of(
-                    "http://localhost:3000",
-                    "http://localhost:3001"
+                        "http://localhost:3000",
+                        "http://localhost:3001"
                 )
         );
-
 
         configuration.setAllowedMethods(
                 List.of(
-                    "GET",
-                    "POST",
-                    "PUT",
-                    "DELETE",
-                    "OPTIONS"
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "OPTIONS"
                 )
         );
 
-
-        configuration.setAllowedHeaders(
-                List.of("*")
-        );
-
+        configuration.setAllowedHeaders(List.of("*"));
 
         configuration.setAllowCredentials(true);
-
-
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
 
-
-        source.registerCorsConfiguration(
-                "/**",
-                configuration
-        );
-
+        source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }

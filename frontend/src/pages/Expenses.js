@@ -17,7 +17,7 @@ function Expenses({ user }) {
   try {
 
     const res = await fetch(
-      `http://localhost:8080/api/expenses/user/${user.userId}`,
+      `http://localhost:8081/api/expenses/user/${user.userId}`,
       {
         headers:{
           Authorization:`Bearer ${user.token}`
@@ -49,7 +49,7 @@ function Expenses({ user }) {
 
   const handleSubmit = async () => {
     try {
-      await fetch('http://localhost:8080/api/expenses', {
+      await fetch('http://localhost:8081/api/expenses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -67,7 +67,7 @@ function Expenses({ user }) {
 
   const deleteExpense = async (id) => {
     try {
-      await fetch(`http://localhost:8080/api/expenses/${id}`, {
+      await fetch(`http://localhost:8081/api/expenses/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

@@ -18,16 +18,16 @@ function Analytics({ user }) {
   const fetchAll = async () => {
     try {
       const [t, e, g, n] = await Promise.all([
-        fetch(`http://localhost:8080/api/tasks/user/${user.userId}`, {
+        fetch(`http://localhost:8081/api/tasks/user/${user.userId}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).then(r => r.json()),
-        fetch(`http://localhost:8080/api/expenses/user/${user.userId}`, {
+        fetch(`http://localhost:8081/api/expenses/user/${user.userId}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).then(r => r.json()),
-        fetch(`http://localhost:8080/api/goals/user/${user.userId}`, {
+        fetch(`http://localhost:8081/api/goals/user/${user.userId}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).then(r => r.json()),
-        fetch(`http://localhost:8080/api/notes/user/${user.userId}`, {
+        fetch(`http://localhost:8081/api/notes/user/${user.userId}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).then(r => r.json()),
       ]);

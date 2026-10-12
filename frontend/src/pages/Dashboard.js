@@ -18,32 +18,8 @@ function Dashboard({ user, setUser }) {
   const [productivityScore, setProductivityScore] = useState(0);
   const [time, setTime] = useState(new Date());
 
-  if (user && user.userId) {
-    fetchDashboardData();
+useEffect(() => { const timer = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(timer); }, []); useEffect(() => { if (!user?.userId) return; const loadDashboard = async () => { await fetchDashboardData(); try { const response = await fetch( `http://localhost:8080/api/productivity/score/${user.userId}` ); if (response.ok) { const data = await response.json(); setProductivityScore(data.score ?? 0); } } catch (error) { console.error('Failed to fetch productivity score:', error); } try { const response = await fetch( `http://localhost:8080/api/recommendations/${user.userId}` ); if (response.ok) { const data = await response.json(); setRecommendations(data.recommendations || []); } } catch (error) { console.error('Failed to fetch recommendations:', error); } }; loadDashboard(); }, [user]);
 
-    fetch(`http://localhost:8081/api/productivity/score/${user.userId}`)
-        .then(res => res.json())
-        .then(data => {
-            setProductivityScore(data.score);
-        })
-        .catch(error => {
-            console.error("Failed to fetch productivity score:", error);
-        });
-
-    fetch(`http://localhost:8081/api/recommendations/${user.userId}`)
-        .then(res => res.json())
-        .then(data => {
-            setRecommendations(data.recommendations || []);
-        })
-        .catch(error => {
-            console.error("Failed to fetch recommendations:", error);
-        });
-}
-
-    const timer = setInterval(() => setTime(new Date()), 1000);
-
-    return () => clearInterval(timer);
-}, [user]);
 
   const fetchData = async (url) => {
     const token = localStorage.getItem("token");
@@ -66,9 +42,9 @@ function Dashboard({ user, setUser }) {
   const fetchDashboardData = async () => {
     try {
       const [t, e, g] = await Promise.all([
-        fetchData(`http://localhost:8080/api/tasks/user/${user.userId}`),
-        fetchData(`http://localhost:8080/api/expenses/user/${user.userId}`),
-        fetchData(`http://localhost:8080/api/goals/user/${user.userId}`)
+        fetchData(`http://localhost:8081/api/tasks/user/${user.userId}`),
+        fetchData(`http://localhost:8081/api/expenses/user/${user.userId}`),
+        fetchData(`http://localhost:8081/api/goals/user/${user.userId}`)
       ]);
 
       console.log("TASK DATA:", t);

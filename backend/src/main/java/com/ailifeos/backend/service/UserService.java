@@ -1,12 +1,13 @@
 package com.ailifeos.backend.service;
 
-
 import com.ailifeos.backend.model.User;
 import com.ailifeos.backend.repository.UserRepository;
 import com.ailifeos.backend.security.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -16,211 +17,177 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UserService {
 
-
     private final UserRepository userRepository;
 
     private final JwtUtil jwtUtil;
 
+    // Initialized here, so Lombok does not add it to the constructor
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+
+    // Checks if a stored value is already a BCrypt hash
+    private boolean isHashed(String value) {
+        return value != null && value.startsWith("$2");
+    }
+
+
+    // Hash the password only if it is not already hashed
+    private String encodeIfNeeded(String password) {
+        if (password == null || password.isBlank() || isHashed(password)) {
+            return password;
+        }
+        return passwordEncoder.encode(password);
+    }
+
 
 
     // REGISTER
-    public Map<String,String> register(
+    public Map<String, String> register(
             String name,
             String email,
             String password
-    ){
+    ) {
 
-        Map<String,String> response = new HashMap<>();
+        Map<String, String> response = new HashMap<>();
 
+        if (userRepository.findByEmail(email).isPresent()) {
 
-        if(userRepository.findByEmail(email).isPresent()){
-
-            response.put(
-                    "error",
-                    "Email already exists"
-            );
+            response.put("error", "Email already exists");
 
             return response;
         }
-
 
         User user = new User();
 
         user.setName(name);
         user.setEmail(email);
-        user.setPassword(password);
+        user.setPassword(passwordEncoder.encode(password));
         user.setRole("USER");
 
+        User savedUser = userRepository.save(user);
 
-        User savedUser =
-                userRepository.save(user);
-
-
-
-        response.put(
-                "message",
-                "Registration successful"
-        );
-
-
-        response.put(
-                "userId",
-                String.valueOf(savedUser.getId())
-        );
-
-
-        response.put(
-                "name",
-                savedUser.getName()
-        );
-
-
-        response.put(
-                "email",
-                savedUser.getEmail()
-        );
-
+        response.put("message", "Registration successful");
+        response.put("userId", String.valueOf(savedUser.getId()));
+        response.put("name", savedUser.getName());
+        response.put("email", savedUser.getEmail());
 
         return response;
-
     }
-
 
 
 
     // LOGIN
-    public Map<String,String> login(
+    public Map<String, String> login(
             String email,
             String password
-    ){
+    ) {
 
-        Map<String,String> response = new HashMap<>();
+        Map<String, String> response = new HashMap<>();
 
-
-        User user =
-                userRepository
+        User user = userRepository
                 .findByEmail(email)
                 .orElse(null);
 
+        if (user == null || password == null) {
 
-
-        if(user == null ||
-                !user.getPassword().equals(password)){
-
-
-            response.put(
-                    "error",
-                    "Invalid email or password"
-            );
-
+            response.put("error", "Invalid email or password");
 
             return response;
         }
 
+        String stored = user.getPassword();
+        boolean valid;
 
+        if (isHashed(stored)) {
 
-        String token =
-                jwtUtil.generateToken(user.getEmail());
+            valid = passwordEncoder.matches(password, stored);
 
+        } else {
 
+            // Old plain text user: compare directly, then upgrade to hash
+            valid = stored != null && stored.equals(password);
 
-        response.put(
-                "message",
-                "Login successful"
-        );
+            if (valid) {
+                user.setPassword(passwordEncoder.encode(password));
+                userRepository.save(user);
+            }
+        }
 
+        if (!valid) {
 
-        response.put(
-                "token",
-                token
-        );
+            response.put("error", "Invalid email or password");
 
+            return response;
+        }
 
-        response.put(
-                "userId",
-                String.valueOf(user.getId())
-        );
+        String token = jwtUtil.generateToken(user.getEmail());
 
-
-        response.put(
-                "name",
-                user.getName()
-        );
-
-
-        response.put(
-                "email",
-                user.getEmail()
-        );
-
+        response.put("message", "Login successful");
+        response.put("token", token);
+        response.put("userId", String.valueOf(user.getId()));
+        response.put("name", user.getName());
+        response.put("email", user.getEmail());
 
         return response;
-
     }
 
 
 
-
-    public List<User> getAllUsers(){
+    public List<User> getAllUsers() {
 
         return userRepository.findAll();
-
     }
 
 
 
-
-    public Optional<User> getUserById(Long id){
+    public Optional<User> getUserById(Long id) {
 
         return userRepository.findById(id);
-
     }
 
 
 
+    public User createUser(User user) {
 
-    public User createUser(User user){
+        user.setPassword(encodeIfNeeded(user.getPassword()));
 
         return userRepository.save(user);
-
     }
-
 
 
 
     public User updateUser(
             Long id,
             User userDetails
-    ){
+    ) {
 
-        User user =
-                userRepository
+        User user = userRepository
                 .findById(id)
                 .orElseThrow(
-                    () -> new RuntimeException("User not found")
+                        () -> new RuntimeException("User not found")
                 );
-
 
         user.setName(userDetails.getName());
 
         user.setEmail(userDetails.getEmail());
 
-        user.setPassword(userDetails.getPassword());
+        // Keep the old password if no new one is sent
+        if (userDetails.getPassword() != null
+                && !userDetails.getPassword().isBlank()) {
+
+            user.setPassword(encodeIfNeeded(userDetails.getPassword()));
+        }
 
         user.setRole(userDetails.getRole());
 
-
         return userRepository.save(user);
-
     }
 
 
 
-
-    public void deleteUser(Long id){
+    public void deleteUser(Long id) {
 
         userRepository.deleteById(id);
-
     }
 
 }

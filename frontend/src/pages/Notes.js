@@ -18,7 +18,7 @@ function Notes({ user }) {
   try {
 
     const res = await fetch(
-      `http://localhost:8080/api/notes/user/${user.userId}`,
+      `http://localhost:8081/api/notes/user/${user.userId}`,
       {
         headers:{
           Authorization:`Bearer ${token}`
@@ -46,7 +46,7 @@ function Notes({ user }) {
 
   const handleSubmit = async () => {
     try {
-      await fetch('http://localhost:8080/api/notes', {
+      await fetch('http://localhost:8081/api/notes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ function Notes({ user }) {
 
   const deleteNote = async (id) => {
     try {
-      await fetch(`http://localhost:8080/api/notes/${id}`, {
+      await fetch(`http://localhost:8081/api/notes/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

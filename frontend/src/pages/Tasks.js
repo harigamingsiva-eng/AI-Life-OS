@@ -22,7 +22,7 @@ console.log("TOKEN:", token);
   const fetchTasks = async () => {
   try {
     const res = await fetch(
-      `http://localhost:8080/api/tasks/user/${user.userId}`,
+      `http://localhost:8081/api/tasks/user/${user.userId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -51,7 +51,7 @@ if (Array.isArray(data)) {
 
   const handleSubmit = async () => {
     try {
-      await fetch('http://localhost:8080/api/tasks', {
+      await fetch('http://localhost:8081/api/tasks', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ if (Array.isArray(data)) {
   const completeTask = async (id) => {
     try {
       const task = tasks.find(t => t.id === id);
-      await fetch(`http://localhost:8080/api/tasks/${id}`, {
+      await fetch(`http://localhost:8081/api/tasks/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ if (Array.isArray(data)) {
 
   const deleteTask = async (id) => {
     try {
-      await fetch(`http://localhost:8080/api/tasks/${id}`, {
+      await fetch(`http://localhost:8081/api/tasks/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

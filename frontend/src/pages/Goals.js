@@ -18,7 +18,7 @@ function Goals({ user }) {
   const fetchGoals = async () => {
   try {
     const res = await fetch(
-      `http://localhost:8080/api/goals/user/${user.userId}`,
+      `http://localhost:8081/api/goals/user/${user.userId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`
@@ -43,7 +43,7 @@ function Goals({ user }) {
 };
   const handleSubmit = async () => {
     try {
-      await fetch('http://localhost:8080/api/goals', {
+      await fetch('http://localhost:8081/api/goals', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,7 +61,7 @@ function Goals({ user }) {
 
   const updateProgress = async (id, progress) => {
     try {
-      await fetch(`http://localhost:8080/api/goals/${id}/progress?progress=${progress}`, {
+      await fetch(`http://localhost:8081/api/goals/${id}/progress?progress=${progress}`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -73,7 +73,7 @@ function Goals({ user }) {
 
   const deleteGoal = async (id) => {
     try {
-      await fetch(`http://localhost:8080/api/goals/${id}`, {
+      await fetch(`http://localhost:8081/api/goals/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
